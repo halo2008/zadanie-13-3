@@ -3,8 +3,12 @@ body {
 	text-align: center;
 }
 
+.red-input {
+	color: red;
+}
+
 .container {
-	max-width: 400px; 
+	max-width: 400px;
 	margin: 0 auto;
 }
 
@@ -34,7 +38,7 @@ body {
 	&.show {
 		display: block;
 	}
-	
+
 	.close {
 		position: absolute;
 		right: 0;
@@ -43,7 +47,7 @@ body {
 		color: #000;
 		text-decoration: none;
 	}
-	
+
 	header {
 		font-size: 20px;
 		line-height: 30px;
@@ -58,8 +62,7 @@ body {
 	}
 }
 
-#modal-one {
-	width: 400px;
-	height: 400px;
-	background-color: red;
+#new-game-modal {
+	width: 300px;
+	height: 300px;
 }

@@ -19,61 +19,68 @@ var choices = {
 
 var choicesArr = [choices.paper, choices.rock, choices.scissors];
 
-var params =
-  {
-    currentRound: 0,
+var params = {
+    currentRound: {
+      number: 0,
+    },
     playerName: '',
-    rounds: [],
+    rounds: 0,
     playerWinThisRound: 0,
     enemyWinThisRound: 0,
     progress: [],
   };
 
-function isDisabledButtons (element) {
+function setStateButtons (element) {
   for (let i = 0; i < userSelection.length; i++) {
     userSelection[i].disabled = element;
   }
 }
 
-isDisabledButtons(true);
-
 cancel.addEventListener('click', function(){
-  hideModal('modal-name');
+  hideModal('new-game-modal');
 })
 
+// document.querySelector('.start-game').addEventListener('click', function () {
+//   showModal('new-game-modal');
+// })
 
 newGame.addEventListener('click', function(){
   params.playerName = document.getElementsByTagName('input')[0].value;
-  params.rounds = document.getElementById('rounds').value;
+  params.rounds = Number(document.getElementById('rounds').value);
   if(params.playerName === '' || params.rounds === '') {
-         isDisabledButtons(true);
-     }
+    setStateButtons(true);
+  }
   else if (params.rounds < 0) {
-    document.getElementById('rounds').classList.add('redInput');
+    document.getElementById('rounds').classList.add('red-input');
   }
   else if (params.rounds > 0){
-    params.progress.push('<h1> Nowa Gra </h1>');
-    document.getElementById('rounds').classList.remove('redInput');
+    document.getElementById('rounds').classList.remove('red-input');
     counter = params.rounds;
-    params.currentRound = 0;
+    params.currentRound = {
+      number: 0,
+    };
     params.playerWinThisRound = 0;
     params.enemyWinThisRound = 0;
     yourWins.innerHTML = 'Twoje wygrane ' + params.playerWinThisRound;
     enemyWins.innerHTML = 'Wygrane przeciwnika ' + params.enemyWinThisRound;
-    hideModal('modal-name');
-    isDisabledButtons(false);
+    hideModal('new-game-modal');
+    setStateButtons(false);
   }
 })
 
 for(let i = 0; i < userSelection.length; i++) {
-  userSelection[i].addEventListener("click", function() {
+
+  userSelection[i].addEventListener("click", function(event) {
     counter -= 1;
     round.innerHTML = 'Pozostało rund ' + counter;
     var computerChoice = getComputerChoice();
     var userChoice = getUserChoice(i);
 
+    params.currentRound = { number: params.currentRound.number };
+
     if ( computerChoice === userChoice) {
       winnerText.innerHTML = 'w tej rundzie mamy remis';
+      params.currentRound.winner = 'remis';
     }
 
     else if (
@@ -85,18 +92,20 @@ for(let i = 0; i < userSelection.length; i++) {
       winnerText.innerHTML = 'w tej rundzie wygrał ' + params.playerName;
       params.playerWinThisRound += 1;
       yourWins.innerHTML = 'Twoje wygrane ' + params.playerWinThisRound;
+      params.currentRound.winner = 'player';
     }
 
     else {
       winnerText.innerHTML = 'w tej rundzie Komputer Wygrał';
       params.enemyWinThisRound += 1;
       enemyWins.innerHTML = 'Wygrane przeciwnika ' + params.enemyWinThisRound;
+      params.currentRound.winner = 'computer';
     }
+
+    params.currentRound.number += 1
 
     choseElementByUser(userChoice);
     choseElementByComp(computerChoice);
-
-    params.currentRound += 1;
 
     checkGameEnd();
   })
@@ -115,7 +124,7 @@ function choseElementByUser(userChoice) {
     user = 'Nożyce';
   }
   userText.innerHTML = 'Wybrałeś ' + user;
-  params.progress.push('<h3 <br> Wybrałeś ' + user + '</h3>');
+  params.currentRound.playerChoice = user;
 }
 
 function choseElementByComp(computerChoice) {
@@ -129,47 +138,49 @@ function choseElementByComp(computerChoice) {
     comp = 'Nożyce';
   }
   compText.innerHTML = 'Komputer wybrał ' +comp;
-  params.progress.push('<h3> Komputer wybrał ' + comp + '</h3>');
+
+  params.currentRound.compChoice = comp;
 }
 
 function checkGameEnd() {
   //console.log('roundsy', params.playerName, 'params.currentRound', params.currentRound);
-  if (params.currentRound > 0){
-    params.progress.push('<br> </h2>'+'<h3> Numer rundy: '+ params.currentRound + '</h3>' + '<h2> Wynik po tej rundzie ' +
-    params.playerWinThisRound + " : " + params.enemyWinThisRound);
+  if (params.currentRound.number > 0){
+    params.currentRound.playerWin = params.playerWinThisRound;
+    params.currentRound.enemy = params.enemyWinThisRound;
   }
-  if (params.rounds === params.currentRound || counter === 0) {
-    isDisabledButtons(true);
+
+  if (params.rounds === params.currentRound.number || counter === 0) {
+    setStateButtons(true);
     if (params.playerWinThisRound < params.enemyWinThisRound){
-      params.progress.push('<h1> <br> Wygrał Komputer </h1>');
       showModal('gameOver');
     }
     else if (params.playerWinThisRound > params.enemyWinThisRound) {
-      params.progress.push('<h1> <br> Wygrał ' + params.playerName + '</h1>');
-      var namePly = params.playerName;
-      document.getElementById('plyName').innerHTML = 'Wygrałeś ' + namePly;
+      document.getElementById('plyName').innerHTML = 'Wygrałeś ' + params.playerName;
       showModal('exit');
     }
     else if (params.playerWinThisRound === params.enemyWinThisRound && params.rounds > 0) {
-      params.progress.push('<h1><br> Remis</h1>');
       showModal('draw');
     }
   }
+
+  params.progress.push(params.currentRound);
 }
 
-checkGameEnd();
+function gameStats() {
+  return params.progress;
+}
 
 function getComputerChoice() {
-    return choicesArr[Math.floor((Math.random() * 3))];
+  return choicesArr[Math.floor((Math.random() * 3))];
 }
 
 function getUserChoice(index) {
-    return choicesArr[index];
+  return choicesArr[index];
 }
 
 function showModal(idModal) {
-    document.getElementById('modal-overlay').classList.add('show');
-    document.getElementById(idModal).classList.add('show');
+  document.getElementById('modal-overlay').classList.add('show');
+  document.getElementById(idModal).classList.add('show');
 }
 
 function hideModal (idModal) {
@@ -178,5 +189,14 @@ function hideModal (idModal) {
   document.getElementById(idModal).classList.remove('show');
 }
 stats.addEventListener('click', function(){
-  document.getElementById("tab").innerHTML = params.progress.join('');
+  debugger
+  document.getElementById("tab").innerHTML = gameStats();
+  console.log(gameStats());
+  //params.progress.join('');
 })
+
+
+// var wrapper = document.creatEelement('table');
+// var playerScoreEl = document.createElement('span');
+//
+// document.xxx.appendChild(wrapper);
